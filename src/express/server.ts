@@ -29,4 +29,4 @@ app.get('/users/:userId/books/:bookId', function (req, res) {
 
 exports.expressApp = app;
 
-export {app as expressApp}
+export { app as expressApp };

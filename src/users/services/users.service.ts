@@ -23,8 +23,8 @@ export class UsersService {
       id: 2,
       name: 'Dawid',
       email: 'dawid@myflow.pl',
-      password: '123',
-      roles: [this.UserRoleName[1]],
+      password: '$2b$10$PoZOZcXnn.QTAZNFIb4clusTUChpWh6jH8OgAbJKwKfMbcopMpuF6',
+      roles: [this.UserRoleName[3]],
     }),
   ];
 
@@ -84,15 +84,14 @@ export class UsersService {
 
   async addRole(userId: number, roleName: UserRoleName): Promise<User> {
     const user = await this.findOne(userId);
-    const newRole = this.UserRoleName.find(role => role.name === roleName);
+    const newRole = this.UserRoleName.find((role) => role.name === roleName);
     user.roles.push(newRole);
     return user;
   }
-  
+
   async removeRole(userId: number, roleName: UserRoleName): Promise<User> {
     const user = await this.findOne(userId);
-    user.roles = user.roles.filter(role => role.name !== roleName);
+    user.roles = user.roles.filter((role) => role.name !== roleName);
     return user;
   }
-
 }

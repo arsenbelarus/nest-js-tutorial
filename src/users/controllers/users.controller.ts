@@ -1,15 +1,25 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
   NotFoundException,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
+  UseFilters,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   CreateUserDto,
   CreateUserResponse,
@@ -18,24 +28,36 @@ import {
   UsersErrorResponse,
 } from '../dto/user.dto';
 import { User } from '../entities/user.entity';
+import { UserExceptionFilter } from '../filters/user-exception.filter';
+import { UserByIdPipe } from '../pipes/user-by-id.pipe';
 import { UsersService } from '../services/users.service';
 
 @Controller('users')
 @ApiTags('Users')
-@ApiResponse({ status: 500, type: UsersErrorResponse, description: 'Some informative response'})
+@ApiResponse({
+  status: 500,
+  type: UsersErrorResponse,
+  description: 'Some informative response',
+})
+@ApiBearerAuth()
+@UseInterceptors(ClassSerializerInterceptor)
+@UseFilters(UserExceptionFilter)
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
   @ApiQuery({ name: 'query', required: false })
   async findAll(@Query('query') query: string): Promise<User[]> {
+    if (query === 'err') {
+      throw new Error('Test Error');
+    }
     return this.usersService.findAll(query);
   }
 
   @Get(':id')
   @ApiResponse({ status: 404, type: UsersErrorResponse })
-  async findOne(@Param('id') id: string): Promise<User> {
-    const user = await this.usersService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<User> {
+    const user = await this.usersService.findOne(id);
 
     if (!user) {
       throw new NotFoundException(`User with id: ${id} doesn't exist`);
@@ -61,7 +83,8 @@ export class UsersController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @ApiParam({ name: 'id', type: Number })
+  remove(@Param('id', UserByIdPipe) user: User) {
+    return this.usersService.remove(user.id);
   }
 }

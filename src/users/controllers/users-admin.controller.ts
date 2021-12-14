@@ -1,7 +1,32 @@
-import { Controller, Delete, Param, Post } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { UpdateUserResponse, UsersErrorResponse } from '../dto/user.dto';
-import { UserRoleName } from '../entities/user.entity';
+import {
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiExtraModels,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Auth } from '../decorators/auth.decorator';
+import { Payload } from '../decorators/payload.decorator';
+import { Roles } from '../decorators/roles.decorator';
+import {
+  RemoveRoleDto,
+  UpdateUserResponse,
+  UsersErrorResponse,
+} from '../dto/user.dto';
+import { User, UserRoleName } from '../entities/user.entity';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { UserByIdPipe } from '../pipes/user-by-id.pipe';
 import { UsersService } from '../services/users.service';
 
 @Controller('users-admin')
@@ -11,24 +36,39 @@ import { UsersService } from '../services/users.service';
   type: UsersErrorResponse,
   description: 'Some informative response',
 })
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+@Roles(UserRoleName.ADMIN)
+@UseInterceptors(ClassSerializerInterceptor)
 export class UsersAdminController {
   constructor(private usersService: UsersService) {}
 
-  @Post('user/:id/role/:roleName')
+  //add role to user
+  @Post('user/:userId/role/:roleName')
+  @ApiParam({ name: 'roleName', enum: UserRoleName })
+  @ApiParam({ name: 'userId', type: Number })
   async addRoleToUser(
-    @Param('id') id: string,
+    @Param('userId', UserByIdPipe) user: User,
     @Param('roleName') roleName: UserRoleName,
-  ): Promise<UpdateUserResponse> {
-    const user = await this.usersService.addRole(+id, roleName);
-    return { user };
+  ): Promise<User> {
+    return this.usersService.addRole(user.id, roleName);
   }
 
-  @Delete('user/:id/role/:roleName')
+  //remove role from user
+  //TODO RemoveRoleDto
+  @ApiParam({ name: 'roleName', enum: UserRoleName })
+  @ApiParam({ name: 'userId', type: Number })
+  @Delete('user/:userId/role/:roleName')
   async deleteRoleFromUser(
-    @Param('id') id: string,
-    @Param('roleName') roleName: UserRoleName,
+    @Param() params: RemoveRoleDto,
   ): Promise<UpdateUserResponse> {
-    const user = await this.usersService.removeRole(+id, roleName);
-    return { user };
+    const { userId, roleName } = params;
+    const updatedUser = await this.usersService.removeRole(+userId, roleName);
+    return { user: updatedUser };
+  }
+
+  @Get('me')
+  getMe(@Auth() loggedInUser: User, @Payload('token') token: string) {
+    return loggedInUser;
   }
 }

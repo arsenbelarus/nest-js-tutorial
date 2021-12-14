@@ -1,5 +1,4 @@
-import { User } from "../entities/user.entity";
-
+import { User, UserRoleName } from '../entities/user.entity';
 
 export class CreateUserDto {
   name: string;
@@ -8,7 +7,7 @@ export class CreateUserDto {
 }
 
 export class CreateUserResponse {
-  user: User
+  user: User;
 }
 
 export class UpdateUserDto {
@@ -17,11 +16,16 @@ export class UpdateUserDto {
 }
 
 export class UpdateUserResponse {
-  user: User
+  user: User;
 }
 
 export class UsersErrorResponse {
-    statusCode: number;
-    message: string;
-    error: string;
+  statusCode: number;
+  message: string;
+  error: string;
+}
+
+export class RemoveRoleDto {
+  userId: string;
+  roleName: UserRoleName;
 }

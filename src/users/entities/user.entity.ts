@@ -1,3 +1,5 @@
+import { Exclude } from 'class-transformer';
+
 export enum UserRoleName {
   ADMIN = 'admin',
   SALES = 'sales',
@@ -18,6 +20,8 @@ export class User {
   id?: number;
   name: string;
   email?: string;
+
+  @Exclude({ toPlainOnly: true })
   password?: string;
   roles?: UserRole[] = [];
 
@@ -33,4 +37,5 @@ export class TokenPayload {
 
 export class RequestPayload {
   user: User;
+  token: string;
 }
