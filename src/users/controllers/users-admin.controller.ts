@@ -68,6 +68,8 @@ export class UsersAdminController {
   }
 
   @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   getMe(@Auth() loggedInUser: User, @Payload('token') token: string) {
     return loggedInUser;
   }

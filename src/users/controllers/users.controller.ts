@@ -20,6 +20,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Observable, takeUntil, timer } from 'rxjs';
 import {
   CreateUserDto,
   CreateUserResponse,
@@ -29,6 +30,7 @@ import {
 } from '../dto/user.dto';
 import { User } from '../entities/user.entity';
 import { UserExceptionFilter } from '../filters/user-exception.filter';
+import { PerformanceInterceptor } from '../interceptors/performance.interceptor';
 import { UserByIdPipe } from '../pipes/user-by-id.pipe';
 import { UsersService } from '../services/users.service';
 
@@ -41,6 +43,7 @@ import { UsersService } from '../services/users.service';
 })
 @ApiBearerAuth()
 @UseInterceptors(ClassSerializerInterceptor)
+@UseInterceptors(PerformanceInterceptor)
 @UseFilters(UserExceptionFilter)
 export class UsersController {
   constructor(private usersService: UsersService) {}
@@ -52,6 +55,28 @@ export class UsersController {
       throw new Error('Test Error');
     }
     return this.usersService.findAll(query);
+  }
+
+  @Get('search')
+  @ApiQuery({ name: 'query', required: false })
+  @ApiResponse({ status: 200, type: User, isArray: true })
+  search(@Query('query') query: string): Observable<User[]> {
+    return new Observable<User[]>((subscriber) => {
+      // CONSTRUCTOR
+      console.log('Constructor');
+      const id = setTimeout(() => {
+        console.log('Complete');
+        subscriber.next([{ name: 'Arsen', id: 55 }]);
+        subscriber.complete();
+      }, 10000);
+
+      return () => {
+        // DESTRUCTOR
+        // TOTO close database connection / cancel sql query !!!
+        console.log('Destructor');
+        clearTimeout(id);
+      };
+    });
   }
 
   @Get(':id')

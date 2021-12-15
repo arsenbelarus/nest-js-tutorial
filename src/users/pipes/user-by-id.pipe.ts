@@ -1,5 +1,4 @@
 import {
-  ArgumentMetadata,
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -11,7 +10,7 @@ import { UsersService } from '../services/users.service';
 @Injectable()
 export class UserByIdPipe implements PipeTransform {
   constructor(private usersService: UsersService) {}
-  async transform(value: string, metadata: ArgumentMetadata): Promise<User> {
+  async transform(value: string): Promise<User> {
     const id = parseInt(value, 10);
     if (!id) {
       throw new BadRequestException('Id param has to be valid number');
