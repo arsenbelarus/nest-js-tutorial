@@ -66,7 +66,7 @@ export class UsersController {
       console.log('Constructor');
       const id = setTimeout(() => {
         console.log('Complete');
-        subscriber.next([{ name: 'Arsen', id: 55 }]);
+        subscriber.next([]);
         subscriber.complete();
       }, 10000);
 

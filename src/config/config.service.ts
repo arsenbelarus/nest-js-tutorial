@@ -17,6 +17,8 @@ export class ConfigService implements OnModuleInit, OnModuleDestroy {
   readonly STORAGE_ASSETS = resolve(this.STORAGE_DIR, 'assets');
   readonly STORAGE_THUMBS = resolve(this.STORAGE_ASSETS, 'thumbs');
 
+  readonly DB_NAME = resolve(this.STORAGE_DIR, 'nest.db');
+
   readonly PHOTOS_DOMAIN = 'http://localhost:3000';
   readonly PHOTOS_BASE_PATH = joinUrl(this.PHOTOS_DOMAIN, 'thumbs');
   readonly PHOTOS_DOWNLOAD_PATH = joinUrl(
